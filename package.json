@@ -1,0 +1,33 @@
+{
+  "name": "youtube-playlist-duration",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cross-browser WebExtension starter (Chrome + Firefox)",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsx scripts/build.ts",
+    "dev": "tsx scripts/build.ts --watch",
+    "package:chrome": "tsx scripts/package.ts chrome",
+    "package:firefox": "tsx scripts/package.ts firefox",
+    "lint": "npx @biomejs/biome lint --write",
+    "format": "npx @biomejs/biome format --write",
+    "check": "npx @biomejs/biome check --write",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.3",
+    "@types/chrome": "^0.1.37",
+    "@types/node": "^25.3.3",
+    "esbuild": "^0.25.2",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "tsx": "^4.20.5",
+    "typescript": "^5.8.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,json}": [
+      "biome check --write --organize-imports-enabled=true"
+    ]
+  }
+}
