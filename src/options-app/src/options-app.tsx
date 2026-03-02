@@ -67,7 +67,10 @@ export function OptionsApp({ variant = 'options' }: OptionsAppProps) {
               name="display-mode"
               value="prefix"
               checked={mode === 'prefix'}
-              onChange={() => setMode('prefix')}
+              onChange={() => {
+                setStatusMessage('');
+                setMode('prefix');
+              }}
             />
             <span>Prefix: [01:23:45] Playlist Title</span>
           </label>
@@ -78,7 +81,10 @@ export function OptionsApp({ variant = 'options' }: OptionsAppProps) {
               name="display-mode"
               value="suffix"
               checked={mode === 'suffix'}
-              onChange={() => setMode('suffix')}
+              onChange={() => {
+                setStatusMessage('');
+                setMode('suffix');
+              }}
             />
             <span>Suffix: Playlist Title [01:23:45]</span>
           </label>
