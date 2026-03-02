@@ -232,6 +232,15 @@
 4. [x] Create extension visual identity and icons (16, 32, 48, 96, 128, 256/512).
    - Acceptance: icons exported, versioned, and referenced in manifest.
 
+### v1.3
+
+1. [ ] Internationalization (i18n) for UI and store texts.
+   - Acceptance: at least `en` and `pt-BR` supported for options/popup labels and publication metadata.
+2. [ ] Duration text style customization.
+   - Acceptance: user can configure style options (for example prefix/suffix and display format) and see updates applied at runtime.
+3. [ ] Automated extension store publishing workflow.
+   - Acceptance: release process can produce submission-ready artifacts and automate publish steps (or assisted upload flow) for Chrome Web Store and Firefox AMO.
+
 ## Definition of Done (DoD)
 
 1. Build with no typing errors.
