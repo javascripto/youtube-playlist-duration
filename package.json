@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "package:chrome": "tsx scripts/package.ts chrome",
     "package:firefox": "tsx scripts/package.ts firefox",
+    "prepackages": "npm run build",
     "packages": "npm run package:chrome && npm run package:firefox",
     "lint": "npx @biomejs/biome lint --write",
     "format": "npx @biomejs/biome format --write",
