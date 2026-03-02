@@ -1,0 +1,62 @@
+name: Auto Tag From package.json
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Create tag if version changed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CURRENT_VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${CURRENT_VERSION}"
+          echo "Current version: ${CURRENT_VERSION}"
+          echo "Target tag: ${TAG}"
+
+          if git rev-parse "${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists. Skipping."
+            exit 0
+          fi
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            if git cat-file -e HEAD^:package.json 2>/dev/null; then
+              PREV_VERSION="$(git show HEAD^:package.json | node -e "const fs=require('fs'); const input=fs.readFileSync(0,'utf8'); console.log(JSON.parse(input).version)")"
+              echo "Previous version: ${PREV_VERSION}"
+              if [ "${CURRENT_VERSION}" = "${PREV_VERSION}" ]; then
+                echo "Version unchanged in package.json. Skipping."
+                exit 0
+              fi
+            else
+              echo "No previous package.json available. Proceeding with tag creation."
+            fi
+          else
+            echo "Manual dispatch detected. Skipping previous-version check."
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${TAG}"
+          git push origin "${TAG}"
