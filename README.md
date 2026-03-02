@@ -1,13 +1,17 @@
-# YouTube Playlist Duration (Base)
+# YouTube Playlist Duration
 
-Base inicial para extensão WebExtension compatível com Chrome e Firefox.
+Cross-browser WebExtension (Chrome + Firefox) that calculates and displays the total duration of YouTube playlists.
 
-## Requisitos
+## Language
+
+- Leia a versão em português: [README.pt-BR.md](./README.pt-BR.md)
+
+## Requirements
 
 - Node.js 20+
 - npm
 
-## Instalação
+## Installation
 
 ```bash
 npm install
@@ -16,53 +20,53 @@ npm install
 ## Scripts
 
 ```bash
-npm run build           # gera dist/chrome e dist/firefox
-npm run dev             # build em watch mode
-npm run icons:generate  # gera PNGs de ícone a partir de src/icons/icon.svg
-npm run build:options   # gera somente a UI de opções (React/Vite)
-npm run build:popup     # gera somente a UI do popup (React/Vite)
-npm run dev:options     # servidor de desenvolvimento da UI de opções
-npm run dev:popup       # servidor de desenvolvimento da UI do popup
-npm run package:chrome  # gera extension-chrome.zip
-npm run package:firefox # gera extension-firefox.zip
+npm run build            # builds dist/chrome and dist/firefox
+npm run dev              # build in watch mode
+npm run icons:generate   # generates icon PNGs from src/icons/icon.svg
+npm run build:options    # builds Options UI only (React/Vite)
+npm run build:popup      # builds Popup UI only (React/Vite)
+npm run dev:options      # Options UI dev server
+npm run dev:popup        # Popup UI dev server
+npm run package:chrome   # creates extension-chrome.zip
+npm run package:firefox  # creates extension-firefox.zip
 ```
 
-Os scripts de automação são escritos em TypeScript e executados via `tsx`.
+Automation scripts are written in TypeScript and executed with `tsx`.
 
-## Estrutura
+## Project Structure
 
-- `src/background/index.ts`: service worker
+- `src/background/index.ts`: background script
 - `src/content/index.ts`: content script
-- `src/options-app/*`: UI compartilhada de configurações (React + Vite + TypeScript)
-- `src/popup-app/*`: entrada React do popup (reusa UI de opções)
-- `src/icons/icon.svg`: ícone fonte da extensão
-- `.icons-dist/*`: PNGs gerados automaticamente para o manifest
-- `src/manifest.chrome.json`: manifest para Chrome
-- `src/manifest.firefox.json`: manifest para Firefox
+- `src/options-app/*`: shared settings UI (React + Vite + TypeScript)
+- `src/popup-app/*`: React popup entry (reuses options UI)
+- `src/icons/icon.svg`: source icon
+- `.icons-dist/*`: generated PNG icons for manifests
+- `src/manifest.chrome.json`: Chrome manifest
+- `src/manifest.firefox.json`: Firefox manifest
 
-## Limitações conhecidas
+## Known Limitation
 
-- O cálculo considera no máximo os vídeos atualmente carregados na lista da playlist (limite prático de ~200 itens no YouTube). Acima disso, os itens não carregados pela interface não entram na soma.
+- The duration total only includes videos currently loaded in the playlist DOM (practical limit around ~200 items on YouTube). Items not loaded by the UI are not included.
 
-## Texto-base para loja
+## Store Copy (Base)
 
-- Descrição curta:
-  - Exibe a duração total da playlist do YouTube diretamente no título.
-- Descrição completa:
-  - Esta extensão calcula a duração total dos vídeos visíveis na playlist e exibe o resultado no título da própria playlist.
-  - A atualização é reativa: quando a lista muda, o total é recalculado automaticamente.
-  - Limitação atual: o YouTube carrega apenas parte da lista no DOM (limite prático de ~200 itens). Vídeos não carregados não entram no cálculo.
+- Short description:
+  - Shows the total YouTube playlist duration directly in the playlist title.
+- Full description:
+  - This extension calculates the total duration of visible playlist videos and displays it in the playlist title.
+  - It updates reactively as the playlist content changes.
+  - Current limitation: YouTube only loads part of the playlist into the DOM (practical limit around ~200 items), so unloaded videos are not included.
 
-## Carregar localmente
+## Load Locally
 
 ### Chrome
 
-1. Acesse `chrome://extensions`.
-2. Ative "Modo do desenvolvedor".
-3. Clique em "Carregar sem compactação" e selecione `dist/chrome`.
+1. Open `chrome://extensions`.
+2. Enable "Developer mode".
+3. Click "Load unpacked" and select `dist/chrome`.
 
 ### Firefox
 
-1. Acesse `about:debugging#/runtime/this-firefox`.
-2. Clique em "Load Temporary Add-on".
-3. Selecione o arquivo `dist/firefox/manifest.json`.
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Click "Load Temporary Add-on".
+3. Select `dist/firefox/manifest.json`.
