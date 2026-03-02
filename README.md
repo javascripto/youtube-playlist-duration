@@ -1,5 +1,9 @@
 # YouTube Playlist Duration
 
+[![CI](https://github.com/javascripto/youtube-playlist-duration/actions/workflows/ci.yml/badge.svg)](https://github.com/javascripto/youtube-playlist-duration/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/javascripto/youtube-playlist-duration/actions/workflows/codeql.yml/badge.svg)](https://github.com/javascripto/youtube-playlist-duration/actions/workflows/codeql.yml)
+[![Release](https://github.com/javascripto/youtube-playlist-duration/actions/workflows/release.yml/badge.svg)](https://github.com/javascripto/youtube-playlist-duration/actions/workflows/release.yml)
+
 Cross-browser WebExtension (Chrome + Firefox) that calculates and displays the total duration of YouTube playlists.
 
 ## Language
