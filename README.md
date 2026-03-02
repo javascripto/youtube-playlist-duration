@@ -18,6 +18,7 @@ npm install
 ```bash
 npm run build           # gera dist/chrome e dist/firefox
 npm run dev             # build em watch mode
+npm run icons:generate  # gera PNGs de ícone a partir de src/icons/icon.svg
 npm run build:options   # gera somente a UI de opções (React/Vite)
 npm run build:popup     # gera somente a UI do popup (React/Vite)
 npm run dev:options     # servidor de desenvolvimento da UI de opções
@@ -34,6 +35,8 @@ Os scripts de automação são escritos em TypeScript e executados via `tsx`.
 - `src/content/index.ts`: content script
 - `src/options-app/*`: UI compartilhada de configurações (React + Vite + TypeScript)
 - `src/popup-app/*`: entrada React do popup (reusa UI de opções)
+- `src/icons/icon.svg`: ícone fonte da extensão
+- `.icons-dist/*`: PNGs gerados automaticamente para o manifest
 - `src/manifest.chrome.json`: manifest para Chrome
 - `src/manifest.firefox.json`: manifest para Firefox
 

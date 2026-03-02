@@ -3,12 +3,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BuildOptions, build as esbuildBuild, context } from 'esbuild';
 import { build as viteBuild } from 'vite';
+import { generateIcons } from './generate-icons';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const srcDir = path.join(rootDir, 'src');
 const distDir = path.join(rootDir, 'dist');
+const iconsBuildDir = path.join(rootDir, '.icons-dist');
 const optionsBuildDir = path.join(rootDir, '.options-dist');
 const popupBuildDir = path.join(rootDir, '.popup-dist');
 
@@ -24,6 +26,9 @@ async function copyStatic(
   targetDir: string,
   browser: (typeof browsers)[number],
 ) {
+  await cp(iconsBuildDir, path.join(targetDir, 'icons'), {
+    recursive: true,
+  });
   await cp(optionsBuildDir, path.join(targetDir, 'options'), {
     recursive: true,
   });
@@ -54,6 +59,7 @@ async function setupDist() {
 }
 
 async function run() {
+  await generateIcons();
   await buildOptionsUi();
   await buildPopupUi();
   await setupDist();

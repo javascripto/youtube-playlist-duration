@@ -4,6 +4,7 @@ build/
 coverage/
 .options-dist/
 .popup-dist/
+.icons-dist/
 
 .env
 .DS_Store
