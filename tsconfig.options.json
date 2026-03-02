@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "types": ["chrome", "node"],
+    "types": ["chrome", "node", "vitest/globals"],
     "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "include": ["src/options-app/src/**/*", "src/shared/**/*"]
