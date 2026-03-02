@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YouTube Playlist Duration",
   "version": "0.1.0",
-  "description": "Base extension scaffold for Chrome and Firefox.",
+  "description": "Shows total YouTube playlist duration directly in the playlist title.",
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["*://*.youtube.com/*"],
   "background": {
