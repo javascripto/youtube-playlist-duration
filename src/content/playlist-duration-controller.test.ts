@@ -23,10 +23,20 @@ vi.mock('./storage', () => ({
 
 describe('createPlaylistDurationController', () => {
   const controllers: ReturnType<typeof createPlaylistDurationController>[] = [];
+  let storageChangeListener: ((mode: 'prefix' | 'suffix') => void) | null =
+    null;
 
   beforeEach(() => {
     document.body.innerHTML = '';
     vi.useFakeTimers();
+    storageChangeListener = null;
+    vi.mocked(loadTitleDisplayMode).mockResolvedValue('prefix');
+    vi.mocked(subscribeToTitleDisplayModeChanges).mockImplementation(
+      listener => {
+        storageChangeListener = listener as (mode: 'prefix' | 'suffix') => void;
+        return () => {};
+      },
+    );
   });
 
   afterEach(() => {
@@ -270,6 +280,126 @@ describe('createPlaylistDurationController', () => {
 
     expect(subscribeToTitleDisplayModeChanges).toHaveBeenCalledTimes(1);
     expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not register listeners twice when start is called twice', () => {
+    const controller = createController();
+    controller.start();
+    controller.start();
+
+    expect(subscribeToTitleDisplayModeChanges).toHaveBeenCalledTimes(1);
+  });
+
+  test('re-renders title when display mode changes from storage', async () => {
+    const titleElement = document.createElement('a');
+    titleElement.textContent = 'Original';
+    const playlistContainer = document.createElement('div');
+
+    vi.mocked(readPlaylistDom).mockReturnValue({
+      status: 'ready',
+      data: {
+        playlistContainer,
+        titleElement,
+        durationLabels: ['10:00', '01:30'],
+      },
+    });
+
+    vi.mocked(getPlaylistDurationFromLabels).mockReturnValue({
+      toTimeString: () => '11:30',
+    } as ReturnType<typeof getPlaylistDurationFromLabels>);
+
+    const controller = createController();
+    controller.start();
+    await flushDebouncedUpdate();
+
+    expect(titleElement.textContent).toBe('[11:30] Original');
+    if (!storageChangeListener) {
+      throw new Error('storage listener not registered');
+    }
+
+    storageChangeListener('suffix');
+    await flushDebouncedUpdate();
+
+    expect(titleElement.textContent).toBe('Original [11:30]');
+  });
+
+  test('ignores async loaded mode after stop', async () => {
+    const titleElement = document.createElement('a');
+    titleElement.textContent = 'Original';
+    const playlistContainer = document.createElement('div');
+
+    vi.mocked(readPlaylistDom).mockReturnValue({
+      status: 'ready',
+      data: {
+        playlistContainer,
+        titleElement,
+        durationLabels: ['10:00', '01:30'],
+      },
+    });
+
+    vi.mocked(getPlaylistDurationFromLabels).mockReturnValue({
+      toTimeString: () => '11:30',
+    } as ReturnType<typeof getPlaylistDurationFromLabels>);
+
+    let resolveMode: ((mode: 'prefix' | 'suffix') => void) | null = null;
+    vi.mocked(loadTitleDisplayMode).mockImplementation(
+      () =>
+        new Promise<'prefix' | 'suffix'>(resolve => {
+          resolveMode = resolve;
+        }),
+    );
+
+    const controller = createController();
+    controller.start();
+    controller.stop();
+
+    vi.clearAllMocks();
+    if (!resolveMode) {
+      throw new Error('loadTitleDisplayMode resolver not set');
+    }
+    const resolve = resolveMode as (mode: 'prefix' | 'suffix') => void;
+    resolve('suffix');
+    await flushDebouncedUpdate();
+
+    expect(readPlaylistDom).not.toHaveBeenCalled();
+    expect(getPlaylistDurationFromLabels).not.toHaveBeenCalled();
+  });
+
+  test('rebinds playlist observer when playlist container instance changes', async () => {
+    const titleElement = document.createElement('a');
+    titleElement.textContent = 'Original';
+    const firstContainer = document.createElement('div');
+    const secondContainer = document.createElement('div');
+
+    vi.mocked(readPlaylistDom)
+      .mockReturnValueOnce({
+        status: 'ready',
+        data: {
+          playlistContainer: firstContainer,
+          titleElement,
+          durationLabels: ['10:00'],
+        },
+      })
+      .mockReturnValue({
+        status: 'ready',
+        data: {
+          playlistContainer: secondContainer,
+          titleElement,
+          durationLabels: ['10:00'],
+        },
+      });
+
+    vi.mocked(getPlaylistDurationFromLabels).mockReturnValue({
+      toTimeString: () => '10:00',
+    } as ReturnType<typeof getPlaylistDurationFromLabels>);
+
+    const controller = createController();
+    controller.start();
+
+    firstContainer.appendChild(document.createElement('span'));
+    await flushDebouncedUpdate();
+
+    expect(readPlaylistDom).toHaveBeenCalled();
   });
 });
 
