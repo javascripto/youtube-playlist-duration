@@ -3,6 +3,10 @@ import { vi } from 'vitest';
 import { getPlaylistDurationFromLabels } from '../core';
 import { readPlaylistDom } from './dom';
 import { createPlaylistDurationController } from './playlist-duration-controller';
+import {
+  loadTitleDisplayMode,
+  subscribeToTitleDisplayModeChanges,
+} from './storage';
 
 vi.mock('../core', () => ({
   getPlaylistDurationFromLabels: vi.fn(),
@@ -10,6 +14,11 @@ vi.mock('../core', () => ({
 
 vi.mock('./dom', () => ({
   readPlaylistDom: vi.fn(),
+}));
+
+vi.mock('./storage', () => ({
+  loadTitleDisplayMode: vi.fn().mockResolvedValue('prefix'),
+  subscribeToTitleDisplayModeChanges: vi.fn().mockReturnValue(() => {}),
 }));
 
 describe('createPlaylistDurationController', () => {
@@ -61,6 +70,33 @@ describe('createPlaylistDurationController', () => {
       '01:30',
     ]);
     expect(titleElement.textContent).toBe('[11:30] Original');
+  });
+
+  test('uses saved suffix mode from storage', async () => {
+    const titleElement = document.createElement('a');
+    titleElement.textContent = 'Original';
+    const playlistContainer = document.createElement('div');
+
+    vi.mocked(readPlaylistDom).mockReturnValue({
+      status: 'ready',
+      data: {
+        playlistContainer,
+        titleElement,
+        durationLabels: ['10:00', '01:30'],
+      },
+    });
+
+    vi.mocked(getPlaylistDurationFromLabels).mockReturnValue({
+      toTimeString: () => '11:30',
+    } as ReturnType<typeof getPlaylistDurationFromLabels>);
+
+    vi.mocked(loadTitleDisplayMode).mockResolvedValue('suffix');
+
+    const controller = createController();
+    controller.start();
+    await flushDebouncedUpdate();
+
+    expect(titleElement.textContent).toBe('Original [11:30]');
   });
 
   test('does not update title when DOM is not ready', () => {
@@ -222,6 +258,18 @@ describe('createPlaylistDurationController', () => {
 
     expect(readPlaylistDom).not.toHaveBeenCalled();
     expect(getPlaylistDurationFromLabels).not.toHaveBeenCalled();
+  });
+
+  test('subscribes to storage changes and unsubscribes on stop()', () => {
+    const unsubscribe = vi.fn();
+    vi.mocked(subscribeToTitleDisplayModeChanges).mockReturnValue(unsubscribe);
+
+    const controller = createController();
+    controller.start();
+    controller.stop();
+
+    expect(subscribeToTitleDisplayModeChanges).toHaveBeenCalledTimes(1);
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 });
 

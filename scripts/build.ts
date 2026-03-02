@@ -1,13 +1,16 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BuildOptions, build, context } from 'esbuild';
+import { BuildOptions, build as esbuildBuild, context } from 'esbuild';
+import { build as viteBuild } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const srcDir = path.join(rootDir, 'src');
 const distDir = path.join(rootDir, 'dist');
+const optionsBuildDir = path.join(rootDir, '.options-dist');
+const popupBuildDir = path.join(rootDir, '.popup-dist');
 
 const watchMode = process.argv.includes('--watch');
 const browsers = ['chrome', 'firefox'] as const;
@@ -15,25 +18,18 @@ const browsers = ['chrome', 'firefox'] as const;
 const entryPoints = [
   path.join(srcDir, 'background', 'index.ts'),
   path.join(srcDir, 'content', 'index.ts'),
-  path.join(srcDir, 'popup', 'index.ts'),
 ];
 
 async function copyStatic(
   targetDir: string,
   browser: (typeof browsers)[number],
 ) {
-  await cp(
-    path.join(srcDir, 'popup', 'index.html'),
-    path.join(targetDir, 'popup', 'index.html'),
-  );
-  await cp(
-    path.join(srcDir, 'popup', 'styles.css'),
-    path.join(targetDir, 'popup', 'styles.css'),
-  );
-  await cp(
-    path.join(srcDir, 'options', 'index.html'),
-    path.join(targetDir, 'options', 'index.html'),
-  );
+  await cp(optionsBuildDir, path.join(targetDir, 'options'), {
+    recursive: true,
+  });
+  await cp(popupBuildDir, path.join(targetDir, 'popup'), {
+    recursive: true,
+  });
 
   const manifest = await readFile(
     path.join(srcDir, `manifest.${browser}.json`),
@@ -58,6 +54,8 @@ async function setupDist() {
 }
 
 async function run() {
+  await buildOptionsUi();
+  await buildPopupUi();
   await setupDist();
 
   const builds = browsers.map<BuildOptions>(browser => ({
@@ -71,7 +69,7 @@ async function run() {
   }));
 
   if (!watchMode) {
-    await Promise.all(builds.map(config => build(config)));
+    await Promise.all(builds.map(config => esbuildBuild(config)));
     // biome-ignore lint/suspicious/noConsoleLog: Logging build completion status
     console.log('Build concluído em dist/chrome e dist/firefox');
     return;
@@ -87,3 +85,19 @@ run().catch(error => {
   console.error(error);
   process.exit(1);
 });
+
+async function buildOptionsUi() {
+  await viteBuild({
+    configFile: path.join(rootDir, 'vite.options.config.ts'),
+    mode: watchMode ? 'development' : 'production',
+    logLevel: 'info',
+  });
+}
+
+async function buildPopupUi() {
+  await viteBuild({
+    configFile: path.join(rootDir, 'vite.popup.config.ts'),
+    mode: watchMode ? 'development' : 'production',
+    logLevel: 'info',
+  });
+}

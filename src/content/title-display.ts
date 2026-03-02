@@ -1,4 +1,4 @@
-export type TitleDisplayMode = 'prefix' | 'suffix';
+import type { TitleDisplayMode } from '../shared/title-display-mode';
 
 const ORIGINAL_TITLE_ATTRIBUTE = 'data-ytpd-original-title';
 const LAST_RENDERED_TITLE_ATTRIBUTE = 'data-ytpd-rendered-title';

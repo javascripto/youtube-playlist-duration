@@ -2,6 +2,8 @@ node_modules/
 dist/
 build/
 coverage/
+.options-dist/
+.popup-dist/
 
 .env
 .DS_Store
