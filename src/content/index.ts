@@ -1,7 +1,15 @@
-(() => {
-  if (!window.location.hostname.includes('youtube.com')) {
+import { isYouTubeHost } from './host';
+import { createPlaylistDurationController } from './playlist-duration-controller';
+
+function main(): void {
+  if (!isYouTubeHost(window.location.hostname)) {
     return;
   }
 
-  console.debug('[yt-playlist-duration] content script loaded');
+  const controller = createPlaylistDurationController();
+  controller.start();
+}
+
+(() => {
+  main();
 })();
