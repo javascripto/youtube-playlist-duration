@@ -13,15 +13,27 @@ vi.mock('./dom', () => ({
 }));
 
 describe('createPlaylistDurationController', () => {
+  const controllers: ReturnType<typeof createPlaylistDurationController>[] = [];
+
   beforeEach(() => {
     document.body.innerHTML = '';
     vi.useFakeTimers();
   });
 
   afterEach(() => {
+    for (const controller of controllers) {
+      controller.stop();
+    }
+    controllers.length = 0;
     vi.clearAllMocks();
     vi.useRealTimers();
   });
+
+  function createController() {
+    const controller = createPlaylistDurationController();
+    controllers.push(controller);
+    return controller;
+  }
 
   test('updates playlist title on start when DOM is ready', () => {
     const titleElement = document.createElement('a');
@@ -41,7 +53,7 @@ describe('createPlaylistDurationController', () => {
       toTimeString: () => '11:30',
     } as ReturnType<typeof getPlaylistDurationFromLabels>);
 
-    const controller = createPlaylistDurationController();
+    const controller = createController();
     controller.start();
 
     expect(getPlaylistDurationFromLabels).toHaveBeenCalledWith([
@@ -57,7 +69,7 @@ describe('createPlaylistDurationController', () => {
       reason: 'playlist-container-not-found',
     });
 
-    const controller = createPlaylistDurationController();
+    const controller = createController();
     controller.start();
 
     expect(getPlaylistDurationFromLabels).not.toHaveBeenCalled();
@@ -82,7 +94,7 @@ describe('createPlaylistDurationController', () => {
       toTimeString: () => '10:00',
     } as ReturnType<typeof getPlaylistDurationFromLabels>);
 
-    const controller = createPlaylistDurationController();
+    const controller = createController();
     controller.start();
 
     vi.clearAllMocks();
@@ -112,7 +124,7 @@ describe('createPlaylistDurationController', () => {
       toTimeString: () => '01:30',
     } as ReturnType<typeof getPlaylistDurationFromLabels>);
 
-    const controller = createPlaylistDurationController();
+    const controller = createController();
     controller.start();
 
     vi.clearAllMocks();
@@ -140,7 +152,7 @@ describe('createPlaylistDurationController', () => {
       toTimeString: () => '03:00',
     } as ReturnType<typeof getPlaylistDurationFromLabels>);
 
-    const controller = createPlaylistDurationController();
+    const controller = createController();
     controller.start();
 
     vi.clearAllMocks();
@@ -168,7 +180,7 @@ describe('createPlaylistDurationController', () => {
       toTimeString: () => '05:00',
     } as ReturnType<typeof getPlaylistDurationFromLabels>);
 
-    const controller = createPlaylistDurationController();
+    const controller = createController();
     controller.start();
 
     vi.clearAllMocks();
@@ -177,6 +189,39 @@ describe('createPlaylistDurationController', () => {
 
     expect(readPlaylistDom).toHaveBeenCalled();
     expect(getPlaylistDurationFromLabels).toHaveBeenCalledWith(['05:00']);
+  });
+
+  test('stops reacting to events and mutations after stop()', async () => {
+    const titleElement = document.createElement('a');
+    const playlistContainer = document.createElement('div');
+    document.body.appendChild(playlistContainer);
+
+    vi.mocked(readPlaylistDom).mockReturnValue({
+      status: 'ready',
+      data: {
+        playlistContainer,
+        titleElement,
+        durationLabels: ['05:00'],
+      },
+    });
+
+    vi.mocked(getPlaylistDurationFromLabels).mockReturnValue({
+      toTimeString: () => '05:00',
+    } as ReturnType<typeof getPlaylistDurationFromLabels>);
+
+    const controller = createController();
+    controller.start();
+    controller.stop();
+
+    vi.clearAllMocks();
+    window.dispatchEvent(new Event('yt-navigate-finish'));
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    document.body.appendChild(document.createElement('div'));
+    playlistContainer.appendChild(document.createElement('span'));
+    await flushDebouncedUpdate();
+
+    expect(readPlaylistDom).not.toHaveBeenCalled();
+    expect(getPlaylistDurationFromLabels).not.toHaveBeenCalled();
   });
 });
 
