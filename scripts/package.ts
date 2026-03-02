@@ -15,7 +15,7 @@ if (!['chrome', 'firefox'].includes(browser)) {
 }
 
 const sourceDir = path.join(rootDir, 'dist', browser);
-const zipPath = path.join(rootDir, `extension-${browser}.zip`);
+const zipPath = path.join(rootDir, 'dist', `extension-${browser}.zip`);
 
 async function assertBuildExists() {
   try {
