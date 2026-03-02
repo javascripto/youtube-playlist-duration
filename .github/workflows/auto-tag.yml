@@ -27,17 +27,24 @@ jobs:
           node-version: "22"
 
       - name: Create tag if version changed
+        id: create_tag
         shell: bash
         run: |
           set -euo pipefail
 
           CURRENT_VERSION="$(node -p "require('./package.json').version")"
           TAG="v${CURRENT_VERSION}"
+          CREATED="false"
           echo "Current version: ${CURRENT_VERSION}"
           echo "Target tag: ${TAG}"
 
           if git rev-parse "${TAG}" >/dev/null 2>&1; then
             echo "Tag ${TAG} already exists. Skipping."
+            TAG=""
+            echo "tag_name=${TAG}" >> "${GITHUB_OUTPUT}"
+            echo "created=${CREATED}" >> "${GITHUB_OUTPUT}"
+            mkdir -p .workflow-output
+            printf "%s" "${TAG}" > .workflow-output/tag_name.txt
             exit 0
           fi
 
@@ -47,6 +54,11 @@ jobs:
               echo "Previous version: ${PREV_VERSION}"
               if [ "${CURRENT_VERSION}" = "${PREV_VERSION}" ]; then
                 echo "Version unchanged in package.json. Skipping."
+                TAG=""
+                echo "tag_name=${TAG}" >> "${GITHUB_OUTPUT}"
+                echo "created=${CREATED}" >> "${GITHUB_OUTPUT}"
+                mkdir -p .workflow-output
+                printf "%s" "${TAG}" > .workflow-output/tag_name.txt
                 exit 0
               fi
             else
@@ -60,3 +72,16 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag "${TAG}"
           git push origin "${TAG}"
+          CREATED="true"
+          echo "tag_name=${TAG}" >> "${GITHUB_OUTPUT}"
+          echo "created=${CREATED}" >> "${GITHUB_OUTPUT}"
+          mkdir -p .workflow-output
+          printf "%s" "${TAG}" > .workflow-output/tag_name.txt
+
+      - name: Upload auto-tag result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-tag-result
+          path: .workflow-output/tag_name.txt
+          if-no-files-found: error

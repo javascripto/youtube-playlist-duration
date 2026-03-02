@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_run:
+    workflows:
+      - Auto Tag From package.json
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       tag_name:
@@ -16,31 +21,77 @@ permissions:
 
 jobs:
   release:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
+      - name: Download auto-tag result
+        if: ${{ github.event_name == 'workflow_run' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: auto-tag-result
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: .workflow-output
+
+      - name: Resolve release tag
+        id: resolve_tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG_NAME=""
+          SHOULD_RELEASE="false"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG_NAME="${{ github.event.inputs.tag_name }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            if [ -f .workflow-output/tag_name.txt ]; then
+              TAG_NAME="$(cat .workflow-output/tag_name.txt)"
+            fi
+          fi
+
+          if [ -n "${TAG_NAME}" ]; then
+            SHOULD_RELEASE="true"
+          fi
+
+          echo "tag_name=${TAG_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "should_release=${SHOULD_RELEASE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Skip release
+        if: ${{ steps.resolve_tag.outputs.should_release != 'true' }}
+        run: echo "No new tag available for release. Skipping."
+
       - name: Checkout
+        if: ${{ steps.resolve_tag.outputs.should_release == 'true' }}
         uses: actions/checkout@v4
 
       - name: Setup Node.js
+        if: ${{ steps.resolve_tag.outputs.should_release == 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
 
       - name: Install dependencies
+        if: ${{ steps.resolve_tag.outputs.should_release == 'true' }}
         run: npm ci
 
       - name: Run tests
+        if: ${{ steps.resolve_tag.outputs.should_release == 'true' }}
         run: npm run test
 
       - name: Build and package
+        if: ${{ steps.resolve_tag.outputs.should_release == 'true' }}
         run: npm run packages
 
       - name: Publish GitHub Release
+        if: ${{ steps.resolve_tag.outputs.should_release == 'true' }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.ref_name }}
+          tag_name: ${{ steps.resolve_tag.outputs.tag_name }}
           generate_release_notes: true
           files: |
             extension-chrome.zip
