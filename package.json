@@ -8,23 +8,29 @@
     "clean": "rm -rf dist",
     "build": "tsx scripts/build.ts",
     "dev": "tsx scripts/build.ts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "package:chrome": "tsx scripts/package.ts chrome",
     "package:firefox": "tsx scripts/package.ts firefox",
     "packages": "npm run package:chrome && npm run package:firefox",
     "lint": "npx @biomejs/biome lint --write",
     "format": "npx @biomejs/biome format --write",
     "check": "npx @biomejs/biome check --write",
-    "prepare": "husky"
+    "prepare": "husky",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json --noEmit"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.3",
     "@types/chrome": "^0.1.37",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.3.3",
     "esbuild": "^0.25.2",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "tsx": "^4.20.5",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4"
   },
   "lint-staged": {
     "*.{ts,tsx,json}": [
