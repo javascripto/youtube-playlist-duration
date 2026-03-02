@@ -1,5 +1,6 @@
 import { getPlaylistDurationFromLabels } from '../core';
 import { readPlaylistDom } from './dom';
+import { applyDurationToTitle } from './title-display';
 import { debounce } from './utils/debounce';
 
 type PlaylistDurationController = {
@@ -20,9 +21,7 @@ export function createPlaylistDurationController(): PlaylistDurationController {
       domResult.data.durationLabels,
     ).toTimeString();
 
-    if (domResult.data.titleElement.textContent !== playlistDuration) {
-      domResult.data.titleElement.textContent = playlistDuration;
-    }
+    applyDurationToTitle(domResult.data.titleElement, playlistDuration, 'prefix');
 
     if (observedPlaylistContainer === domResult.data.playlistContainer) {
       return;

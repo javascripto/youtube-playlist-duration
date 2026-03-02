@@ -48,7 +48,7 @@ describe('createPlaylistDurationController', () => {
       '10:00',
       '01:30',
     ]);
-    expect(titleElement.textContent).toBe('11:30');
+    expect(titleElement.textContent).toBe('[11:30] Original');
   });
 
   test('does not update title when DOM is not ready', () => {
