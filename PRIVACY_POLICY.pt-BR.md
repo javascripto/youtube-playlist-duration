@@ -16,7 +16,7 @@ Para funcionar corretamente, a extensão pode acessar:
 ## Uso de permissões
 - `host_permissions` para páginas do YouTube: usada apenas para executar o content script nas páginas compatíveis.
 - `storage`: usada apenas para salvar preferências da extensão.
-- `activeTab`: usada para operação da extensão no contexto da aba ativa.
+
 
 ## Compartilhamento de dados
 A extensão não compartilha dados com terceiros.

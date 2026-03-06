@@ -16,7 +16,7 @@ To work properly, the extension may access:
 ## Permissions Usage
 - `host_permissions` for YouTube pages: used only to run the content script on matching YouTube pages.
 - `storage`: used only to save extension preferences.
-- `activeTab`: used for extension operation in the active tab context.
+
 
 ## Data Sharing
 The extension does not share data with third parties.

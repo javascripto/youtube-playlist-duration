@@ -3,8 +3,12 @@
   "name": "YouTube Playlist Duration",
   "version": "0.1.0",
   "description": "Shows total YouTube playlist duration directly in the playlist title.",
-  "permissions": ["storage", "activeTab"],
-  "host_permissions": ["*://*.youtube.com/*"],
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*"
+  ],
   "background": {
     "service_worker": "background/index.js",
     "type": "module"
@@ -30,8 +34,12 @@
   "options_page": "options/index.html",
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
-      "js": ["content/index.js"],
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "content/index.js"
+      ],
       "run_at": "document_idle"
     }
   ]
